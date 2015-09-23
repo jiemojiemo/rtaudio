@@ -150,12 +150,15 @@
     <ClCompile Include="newRecordMain.cpp" />
     <ClCompile Include="pcm2wav.cpp" />
     <ClCompile Include="RtAudio.cpp" />
+    <ClCompile Include="rtrecord.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pcm2wav.h" />
     <ClInclude Include="pcmaudio.h" />
     <ClInclude Include="record.h" />
+    <ClInclude Include="recordfactory.h" />
     <ClInclude Include="RtAudio.h" />
+    <ClInclude Include="rtrecord.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

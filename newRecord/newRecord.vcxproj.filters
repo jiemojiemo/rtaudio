@@ -24,6 +24,9 @@
     <ClCompile Include="pcm2wav.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="rtrecord.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RtAudio.h">
@@ -36,6 +39,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pcmaudio.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="rtrecord.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="recordfactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
