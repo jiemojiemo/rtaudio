@@ -2,9 +2,6 @@
 
 #include <string>
 
-
-
-
 class Record {
 public:
 	virtual void Start()=0;

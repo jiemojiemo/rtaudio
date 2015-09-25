@@ -19,6 +19,9 @@ using std::endl;
 
 #define TRY_CATCH_RTAUDIOERROR(x) try {x;}catch(RtAudioError& e){cout<<'\n'<<e.getMessage()<<endl;}
 
+typedef short RTAUDIO_SIN16_TYPE;
+typedef float RTAUDIO_FLOAT32_TYPE;
+
 //申请内存
 static void* MemoryAlloc(unsigned long totalBytes)
 {
@@ -69,6 +72,32 @@ static int inputCallback(void */*outputbuffer*/, void* inputBuffer, unsigned int
 	return 0;
 }
 
+template <typename T>
+static void DoRecord( RecordData& recordData, RecordParameters& params )
+{
+	RtAudio adc;
+	assert(adc.getDeviceCount() >= 1);
+	ON_SCOPE_EXIT([&]() {if (adc.isStreamOpen()) adc.closeStream(); });
+
+	//初始化流参数
+	RtAudio::StreamParameters iParams;
+	iParams.deviceId = adc.getDefaultInputDevice();
+	iParams.nChannels = recordData.channels;
+
+	//打开音频流，同时做安全的捕获异常处理
+	TRY_CATCH_RTAUDIOERROR(adc.openStream(NULL, &iParams, params.audioFormat,
+		params.sampleRate, &params.framesPerBuffer, &inputCallback<short>, (void*)&recordData));
+	
+	//开始录音，同时做安全的捕获异常处理
+	TRY_CATCH_RTAUDIOERROR(adc.startStream());
+
+	//等待录音结束
+	WaitForFinish(adc);
+
+	//打印录音信息
+	PrintRecordMessage(params);
+}
+
 
 
 //RtRecord
@@ -89,36 +118,15 @@ RtRecord16Bits::RtRecord16Bits(const RecordParameters& params) :
 	m_data.frameCounter = 0;
 	m_data.totalFrames = params.sampleRate * params.nSeconds;
 	m_data.totalBytes = m_data.totalFrames*m_data.channels*sizeof(short);
+
+	m_data.buffer = MemoryAlloc(m_data.totalBytes);
 }
 
 
 void RtRecord16Bits::Start()
 {
-	RtAudio adc;
-	assert(adc.getDeviceCount() >= 1);
-	ON_SCOPE_EXIT([&]() {if (adc.isStreamOpen()) adc.closeStream(); });
-
-	//初始化流参数
-	RtAudio::StreamParameters iParams;
-	iParams.deviceId = adc.getDefaultInputDevice();
-	iParams.nChannels = m_data.channels;
-
 	//重置时间轴
 	ResetTimeAxis();
-
-	//打开音频流，同时做安全的捕获异常处理
-	TRY_CATCH_RTAUDIOERROR(adc.openStream(NULL, &iParams, m_params.audioFormat,
-		m_params.sampleRate, &m_params.framesPerBuffer, &inputCallback<short>, (void*)&m_data));
-
-	//申请内存空间来存放录音数据
-	m_data.buffer = MemoryAlloc(m_data.totalBytes);
-
-	//开始录音，同时做安全的捕获异常处理
-	TRY_CATCH_RTAUDIOERROR(adc.startStream());
-
-	//等待录音结束
-	WaitForFinish( adc );
-
-	//打印录音信息
-	PrintRecordMessage( m_params );
+	//开始录音
+	DoRecord<RTAUDIO_SIN16_TYPE>(m_data, m_params);
 }
